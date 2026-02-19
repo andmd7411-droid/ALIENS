@@ -12,7 +12,7 @@ interface AlienProps {
 export function Alien({ data }: AlienProps) {
     const { captureAlien, activePowerup } = useGameStore()
     // Force cache bust with version
-    const texture = useLoader(TextureLoader, `/aliens/${data.type}.jpg?v=2`)
+    const texture = useLoader(TextureLoader, `${import.meta.env.BASE_URL}aliens/${data.type}.jpg?v=2`)
     const meshRef = useRef<Group>(null)
     const fireInterval = useRef<number | null>(null)
 
