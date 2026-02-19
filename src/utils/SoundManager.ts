@@ -5,7 +5,7 @@ export class SoundManager {
 
     constructor() {
         try {
-            this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            this.ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
         } catch (e) {
             console.error("Web Audio API not supported", e);
         }

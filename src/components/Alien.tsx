@@ -29,9 +29,19 @@ export function Alien({ data }: AlienProps) {
         const sound = soundManager.createSpatialSource(data.position)
         if (sound) {
             audioRef.current = sound
-            sound.oscillator.type = 'sawtooth'
-            sound.oscillator.frequency.setValueAtTime(50 + Math.random() * 50, soundManager.ctx!.currentTime)
-            sound.gain.gain.setValueAtTime(0.01, soundManager.ctx!.currentTime)
+            sound.oscillator.type = 'sine'
+            sound.oscillator.frequency.setValueAtTime(150 + Math.random() * 50, soundManager.ctx!.currentTime)
+
+            // Pulse the volume periodically
+            const startTime = soundManager.ctx!.currentTime
+            const pulseRate = 2.0; // every 2 seconds
+            for (let i = 0; i < 60; i++) { // Schedule for 2 minutes
+                const t = startTime + i * pulseRate;
+                sound.gain.gain.setValueAtTime(0, t);
+                sound.gain.gain.linearRampToValueAtTime(0.02, t + 0.1);
+                sound.gain.gain.linearRampToValueAtTime(0, t + 1.5);
+            }
+
             sound.oscillator.start()
         }
 

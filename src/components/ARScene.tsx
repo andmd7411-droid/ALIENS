@@ -133,12 +133,11 @@ export function ARScene() {
                                     (Math.random() - 0.5) * shakeRef.current
                                 )
                             } else {
-                                self.position.set(0, 0, 0)
+                                if (self.position.x !== 0) self.position.set(0, 0, 0)
                             }
                         }}
                     >
                         <React.Suspense fallback={null}>
-                            <HUDLayer />
                             <ExplosionSystem />
                             <GlobalInputHandler />
 
@@ -154,6 +153,10 @@ export function ARScene() {
                             ))}
                         </React.Suspense>
                     </group>
+
+                    <React.Suspense fallback={null}>
+                        <HUDLayer />
+                    </React.Suspense>
                 </XR>
             </Canvas>
         </>
