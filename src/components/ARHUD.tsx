@@ -77,7 +77,7 @@ export function ARHUD() {
         // Update Stats Position (Top Left)
         if (statsRef.current) {
             const marginX = 0.05
-            const marginY = 0.05
+            const marginY = 0.2
             const x = -v.width / 2 + marginX
             const y = v.height / 2 - marginY
             statsRef.current.position.set(x, y, -hudDist)
@@ -85,7 +85,7 @@ export function ARHUD() {
 
         // Update Pause Button Position (Top Center)
         if (pauseBtnRef.current) {
-            const marginY = 0.05
+            const marginY = 0.2
             const y = v.height / 2 - marginY
             pauseBtnRef.current.position.set(0, y, -hudDist)
         }
@@ -133,8 +133,8 @@ export function ARHUD() {
                     {!isPaused && (
                         <group ref={statsRef}>
                             {/* Background plate for better contrast */}
-                            <mesh position={[0.2, -0.1, -0.01]}>
-                                <planeGeometry args={[0.5, 0.3]} />
+                            <mesh position={[0.2, -0.15, -0.01]}>
+                                <planeGeometry args={[0.5, 0.4]} />
                                 <meshBasicMaterial color="black" transparent opacity={0.4} />
                             </mesh>
 
