@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xenoscope</title>
+  <style>
+    #error-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      color: red;
+      z-index: 10000;
+      padding: 20px;
+      display: none;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 14px;
+      overflow-y: auto;
+    }
+
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #111;
+      color: #00f260;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      z-index: 9998;
+    }
+  </style>
+  <script>
+    window.onerror = function (msg, url, line, col, error) {
+      var overlay = document.getElementById('error-overlay');
+      if (overlay) {
+        overlay.style.display = 'block';
+        overlay.innerHTML += "Global Error:\n" + msg + "\n" + url + ":" + line + ":" + col + "\n" + (error ? error.stack : "") + "\n\n";
+      }
+    };
+    window.addEventListener('unhandledrejection', function (event) {
+      var overlay = document.getElementById('error-overlay');
+      if (overlay) {
+        overlay.style.display = 'block';
+        overlay.innerHTML += "Promise Rejection:\n" + event.reason + "\n\n";
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <div id="loading-screen">
+    <div style="text-align: center;">
+      <h2 style="margin-bottom: 10px;">XENOSCOPE</h2>
+      <div id="loading-text">Preparing mission...</div>
+    </div>
+  </div>
+  <div id="error-overlay"></div>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
