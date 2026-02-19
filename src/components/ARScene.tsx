@@ -12,7 +12,7 @@ import { SpaceBackground } from './SpaceBackground'
 
 const store = createXRStore({
     // @ts-expect-error - Some versions of @react-three/xr have different types
-    domOverlay: { root: document.body },
+    domOverlay: { root: () => document.getElementById('ar-overlay')! },
     optionalFeatures: ['dom-overlay']
 })
 
