@@ -134,7 +134,7 @@ export const useGameStore = create<GameState>((set) => ({
         }));
     },
 
-    takeDamage: (amount) => {
+    takeDamage: (amount: number) => {
         const state = useGameStore.getState();
         if (state.isGameOver || state.isLevelComplete || state.isPaused) return;
 
@@ -145,8 +145,8 @@ export const useGameStore = create<GameState>((set) => ({
         const now = Date.now();
         if (now - state.lastDamageTime < 1000) return;
 
-        // Penalty: -50 points
-        const newScore = state.score - 50;
+        // Penalty subtracts amount
+        const newScore = state.score - amount;
         const isGameOver = newScore < 0;
 
         set({

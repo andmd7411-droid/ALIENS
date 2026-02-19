@@ -9,6 +9,7 @@ import { PowerupItem } from './PowerupItem'
 import { GlobalInputHandler } from './GlobalInputHandler'
 
 const store = createXRStore({
+    // @ts-expect-error - Some versions of @react-three/xr have different types
     domOverlay: { root: document.body },
     optionalFeatures: ['dom-overlay']
 })
@@ -19,9 +20,11 @@ export function ARScene() {
     useEffect(() => {
         console.log("ARScene: Component mounted");
         if ('xr' in navigator) {
-            (navigator as any).xr.isSessionSupported('immersive-ar').then((supported: boolean) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const xr = (navigator as unknown as { xr: any }).xr;
+            xr.isSessionSupported('immersive-ar').then((supported: boolean) => {
                 console.log(`ARScene: WebXR immersive-ar supported: ${supported}`);
-            }).catch((err: any) => {
+            }).catch((err: unknown) => {
                 console.error("ARScene: Error checking XR support", err);
             });
         } else {

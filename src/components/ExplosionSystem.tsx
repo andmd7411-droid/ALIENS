@@ -20,7 +20,7 @@ function ExplosionParticles({ data }: { data: Explosion }) {
         }))
     }, [])
 
-    useFrame((state, delta) => {
+    useFrame((_state, delta) => {
         const elapsed = (Date.now() - data.createdAt) / 1000
 
         particles.forEach((p) => {

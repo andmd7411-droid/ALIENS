@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { type Powerup, useGameStore } from '../store/gameStore'
 import { Html } from '@react-three/drei'

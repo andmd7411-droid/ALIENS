@@ -68,7 +68,7 @@ export function Alien({ data }: AlienProps) {
 
             if (playerDist < 1.2) { // Increased hit distance slightly for better feel
                 // Too close! Deal damage.
-                useGameStore.getState().takeDamage(10)
+                useGameStore.getState().takeDamage(50)
             }
         }
     })

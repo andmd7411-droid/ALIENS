@@ -53,7 +53,6 @@ function LevelCompleteUI() {
 
 export function ARHUD() {
     const { score, level, timeRemaining, capturedCount, highScore, isPaused, togglePause, resetHighScore, isGameOver, startGame } = useGameStore()
-    const { camera } = useThree()
     const groupRef = useRef<Group>(null)
     const statsRef = useRef<Group>(null)
     const pauseBtnRef = useRef<Group>(null)
@@ -66,7 +65,7 @@ export function ARHUD() {
 
     const hudDist = 1.5
 
-    useFrame((state) => {
+    useFrame((state, _delta) => {
         if (!groupRef.current) return
 
         // Lock HUD container to camera
