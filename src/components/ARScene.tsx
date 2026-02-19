@@ -1,4 +1,4 @@
-import { XR, createXRStore } from '@react-three/xr'
+import { XR, createXRStore, useXR } from '@react-three/xr'
 import { Canvas } from '@react-three/fiber'
 import React, { useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
@@ -14,6 +14,16 @@ const store = createXRStore({
     domOverlay: { root: document.body },
     optionalFeatures: ['dom-overlay']
 })
+
+function HUDLayer() {
+    const session = useXR((state) => state.session)
+    return (
+        <>
+            <ARHUD />
+            {!session && <SpaceBackground />}
+        </>
+    )
+}
 
 export function ARScene() {
     const { spawnAlien, isPlaying, updateTime, aliens, powerups, level } = useGameStore()
@@ -89,10 +99,8 @@ export function ARScene() {
                     <ambientLight intensity={1.5} />
                     <pointLight position={[10, 10, 10]} intensity={1} />
 
-                    <SpaceBackground />
-
                     <React.Suspense fallback={null}>
-                        <ARHUD />
+                        <HUDLayer />
                         <ExplosionSystem />
                         <GlobalInputHandler />
 

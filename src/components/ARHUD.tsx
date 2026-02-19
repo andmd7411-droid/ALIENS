@@ -1,5 +1,5 @@
 import { Text } from '@react-three/drei'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { useRef, useState } from 'react'
 import { Group } from 'three'
 import { useGameStore } from '../store/gameStore'
@@ -7,12 +7,11 @@ import { useGameStore } from '../store/gameStore'
 function LevelCompleteUI() {
     const { isLevelComplete, nextLevel } = useGameStore()
     const [hovered, setHovered] = useState(false)
-    const { camera } = useThree()
 
     if (!isLevelComplete) return null
 
     return (
-        <group position={[0, 0, -1.5]} quaternion={camera.quaternion}>
+        <group position={[0, 0, -1.5]}>
             <Text
                 position={[0, 0.3, 0]}
                 fontSize={0.2}
@@ -35,7 +34,7 @@ function LevelCompleteUI() {
             >
                 <mesh>
                     <planeGeometry args={[0.8, 0.25]} />
-                    <meshBasicMaterial color={hovered ? "#00f260" : "rgba(0, 255, 100, 0.3)"} transparent opacity={0.8} />
+                    <meshBasicMaterial color={hovered ? "#00f260" : "rgba(0, 255, 100, 0.4)"} transparent opacity={0.8} />
                 </mesh>
                 <Text
                     position={[0, 0, 0.01]}
@@ -65,7 +64,7 @@ export function ARHUD() {
 
     const hudDist = 1.5
 
-    useFrame((state, _delta) => {
+    useFrame((state) => {
         if (!groupRef.current) return
 
         // Lock HUD container to camera
@@ -77,8 +76,8 @@ export function ARHUD() {
 
         // Update Stats Position (Top Left)
         if (statsRef.current) {
-            const marginX = 0.1
-            const marginY = 0.5
+            const marginX = 0.05
+            const marginY = 0.05
             const x = -v.width / 2 + marginX
             const y = v.height / 2 - marginY
             statsRef.current.position.set(x, y, -hudDist)
@@ -86,7 +85,7 @@ export function ARHUD() {
 
         // Update Pause Button Position (Top Center)
         if (pauseBtnRef.current) {
-            const marginY = 0.5
+            const marginY = 0.05
             const y = v.height / 2 - marginY
             pauseBtnRef.current.position.set(0, y, -hudDist)
         }
@@ -133,12 +132,18 @@ export function ARHUD() {
                     {/* Stats Panel - Top Left */}
                     {!isPaused && (
                         <group ref={statsRef}>
+                            {/* Background plate for better contrast */}
+                            <mesh position={[0.2, -0.1, -0.01]}>
+                                <planeGeometry args={[0.5, 0.3]} />
+                                <meshBasicMaterial color="black" transparent opacity={0.4} />
+                            </mesh>
+
                             <Text
                                 fontSize={0.06}
                                 color="#ffff00"
                                 anchorX="left"
                                 anchorY="top"
-                                position={[0, 0.08, 0]}
+                                position={[0, 0, 0]}
                             >
                                 {`HI-SCORE: ${highScore.toString().padStart(6, '0')}`}
                             </Text>
@@ -147,6 +152,7 @@ export function ARHUD() {
                                 color="#00f260"
                                 anchorX="left"
                                 anchorY="top"
+                                position={[0, -0.06, 0]}
                                 lineHeight={1.4}
                             >
                                 {`SCORE:    ${score.toString().padStart(6, '0')}
