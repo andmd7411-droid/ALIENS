@@ -5,7 +5,6 @@ import * as THREE from 'three'
 import { useGameStore } from '../store/gameStore'
 import { Alien } from './Alien'
 import { ARHUD } from './ARHUD'
-import { soundManager } from '../utils/SoundManager'
 import { ExplosionSystem } from './ExplosionSystem'
 import { PowerupItem } from './PowerupItem'
 import { GlobalInputHandler } from './GlobalInputHandler'
@@ -21,7 +20,6 @@ function HUDLayer() {
     const session = useXR((state) => state.session)
     return (
         <>
-            <ARHUD />
             {!session && <SpaceBackground />}
         </>
     )
@@ -32,16 +30,6 @@ export function ARScene() {
     const shakeRef = React.useRef(0)
     const lastDamageRef = React.useRef(0)
     const sceneGroupRef = React.useRef<THREE.Group>(null)
-
-    // Handle BGM
-    useEffect(() => {
-        if (isPlaying) {
-            soundManager.startBGM()
-        } else {
-            soundManager.stopBGM()
-        }
-        return () => soundManager.stopBGM()
-    }, [isPlaying])
 
     // Handle Screen Shake
     useEffect(() => {
@@ -95,14 +83,17 @@ export function ARScene() {
     }, [isPlaying, updateTime])
 
     return (
-        <>
+        <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+            {/* HTML HUD sits on top of Canvas */}
+            <ARHUD />
+
             <button
                 onClick={() => store.enterAR()}
                 style={{
                     position: 'absolute',
                     top: '20px',
                     right: '20px',
-                    zIndex: 100,
+                    zIndex: 1100, // Above everything
                     padding: '8px 16px',
                     fontSize: '0.9rem',
                     background: 'rgba(0, 242, 96, 0.2)',
@@ -118,7 +109,8 @@ export function ARScene() {
             >
                 Enter AR
             </button>
-            <Canvas style={{ background: '#111' }}>
+
+            <Canvas style={{ background: '#111', position: 'absolute', inset: 0 }}>
                 <XR store={store}>
                     <ambientLight intensity={1.5} />
                     <pointLight position={[10, 10, 10]} intensity={1} />
@@ -159,6 +151,6 @@ export function ARScene() {
                     </React.Suspense>
                 </XR>
             </Canvas>
-        </>
+        </div>
     )
 }

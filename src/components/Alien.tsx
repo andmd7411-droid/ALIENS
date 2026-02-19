@@ -21,38 +21,13 @@ export function Alien({ data }: AlienProps) {
     const hasExpired = useRef(false)
 
     const [showLaser, setShowLaser] = useState(false)
-    const audioRef = useRef<{ oscillator: OscillatorNode, gain: GainNode, panner: PannerNode } | null>(null)
 
-    // Cleanup interval and audio on unmount
+    // Cleanup interval on unmount
     useEffect(() => {
-        // Initialize spatial sound
-        const sound = soundManager.createSpatialSource(data.position)
-        if (sound) {
-            audioRef.current = sound
-            sound.oscillator.type = 'sine'
-            sound.oscillator.frequency.setValueAtTime(150 + Math.random() * 50, soundManager.ctx!.currentTime)
-
-            // Pulse the volume periodically
-            const startTime = soundManager.ctx!.currentTime
-            const pulseRate = 2.0; // every 2 seconds
-            for (let i = 0; i < 60; i++) { // Schedule for 2 minutes
-                const t = startTime + i * pulseRate;
-                sound.gain.gain.setValueAtTime(0, t);
-                sound.gain.gain.linearRampToValueAtTime(0.02, t + 0.1);
-                sound.gain.gain.linearRampToValueAtTime(0, t + 1.5);
-            }
-
-            sound.oscillator.start()
-        }
-
         return () => {
             if (fireInterval.current) clearInterval(fireInterval.current)
-            if (audioRef.current) {
-                audioRef.current.oscillator.stop()
-                audioRef.current.oscillator.disconnect()
-            }
         }
-    }, [data.id, data.position])
+    }, [data.id])
 
     useFrame((state, delta) => {
         if (meshRef.current) {
@@ -70,13 +45,6 @@ export function Alien({ data }: AlienProps) {
             const targetPos = state.camera.position
             const direction = new THREE.Vector3().subVectors(targetPos, worldPos).normalize()
 
-            // Update Spatial Sound Position
-            if (audioRef.current) {
-                audioRef.current.panner.positionX.setValueAtTime(worldPos.x, state.clock.elapsedTime)
-                audioRef.current.panner.positionY.setValueAtTime(worldPos.y, state.clock.elapsedTime)
-                audioRef.current.panner.positionZ.setValueAtTime(worldPos.z, state.clock.elapsedTime)
-            }
-
             // Move along direction
             const speed = data.speed * 0.5 // Adjust speed for chase
             meshRef.current.position.add(direction.multiplyScalar(speed * delta))
@@ -91,12 +59,7 @@ export function Alien({ data }: AlienProps) {
             meshRef.current.rotation.z -= delta * 2.0
             meshRef.current.rotation.z += Math.sin(time * 5) * 0.1
 
-            // Update Spatial Sound Position
-            if (audioRef.current && worldPos) {
-                audioRef.current.panner.positionX.setValueAtTime(worldPos.x, state.clock.elapsedTime)
-                audioRef.current.panner.positionY.setValueAtTime(worldPos.y, state.clock.elapsedTime)
-                audioRef.current.panner.positionZ.setValueAtTime(worldPos.z, state.clock.elapsedTime)
-            }
+            // Deterministic random/offset based on ID (simple hash)
             // Increased to 12 seconds to give user time to find them (360 search takes time)
             if (timeAlive.current > 12 && !hasExpired.current) {
                 hasExpired.current = true
