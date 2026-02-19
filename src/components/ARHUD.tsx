@@ -62,7 +62,7 @@ export function ARHUD() {
     const [resetHovered, setResetHovered] = useState(false)
     const [retryHovered, setRetryHovered] = useState(false)
 
-    const hudDist = 1.5
+    const hudDist = 0.8
 
     useFrame((state) => {
         if (!groupRef.current) return
@@ -77,7 +77,7 @@ export function ARHUD() {
         // Update Stats Position (Top Left)
         if (statsRef.current) {
             const marginX = 0.05
-            const marginY = 0.2
+            const marginY = 0.1
             const x = -v.width / 2 + marginX
             const y = v.height / 2 - marginY
             statsRef.current.position.set(x, y, -hudDist)
@@ -85,7 +85,7 @@ export function ARHUD() {
 
         // Update Pause Button Position (Top Center)
         if (pauseBtnRef.current) {
-            const marginY = 0.2
+            const marginY = 0.1
             const y = v.height / 2 - marginY
             pauseBtnRef.current.position.set(0, y, -hudDist)
         }
@@ -133,13 +133,13 @@ export function ARHUD() {
                     {!isPaused && (
                         <group ref={statsRef}>
                             {/* Background plate for better contrast */}
-                            <mesh position={[0.2, -0.15, -0.01]}>
-                                <planeGeometry args={[0.5, 0.4]} />
-                                <meshBasicMaterial color="black" transparent opacity={0.4} />
+                            <mesh position={[0.15, -0.08, -0.01]}>
+                                <planeGeometry args={[0.35, 0.2]} />
+                                <meshBasicMaterial color="black" transparent opacity={0.5} />
                             </mesh>
 
                             <Text
-                                fontSize={0.06}
+                                fontSize={0.04}
                                 color="#ffff00"
                                 anchorX="left"
                                 anchorY="top"
@@ -148,12 +148,12 @@ export function ARHUD() {
                                 {`HI-SCORE: ${highScore.toString().padStart(6, '0')}`}
                             </Text>
                             <Text
-                                fontSize={0.05}
+                                fontSize={0.035}
                                 color="#00f260"
                                 anchorX="left"
                                 anchorY="top"
-                                position={[0, -0.06, 0]}
-                                lineHeight={1.4}
+                                position={[0, -0.05, 0]}
+                                lineHeight={1.2}
                             >
                                 {`SCORE:    ${score.toString().padStart(6, '0')}
 LEVEL:    ${level}
