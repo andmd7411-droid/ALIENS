@@ -7,6 +7,7 @@ import { ARHUD } from './ARHUD'
 import { ExplosionSystem } from './ExplosionSystem'
 import { PowerupItem } from './PowerupItem'
 import { GlobalInputHandler } from './GlobalInputHandler'
+import { SpaceBackground } from './SpaceBackground'
 
 const store = createXRStore({
     // @ts-expect-error - Some versions of @react-three/xr have different types
@@ -61,13 +62,34 @@ export function ARScene() {
 
     return (
         <>
-            <button onClick={() => store.enterAR()} style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 100, padding: '1rem 2rem', fontSize: '1.5rem', background: '#00f260', color: 'black', border: 'none', borderRadius: '10px' }}>
-                ENTER AR MISSION
+            <button
+                onClick={() => store.enterAR()}
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    zIndex: 100,
+                    padding: '8px 16px',
+                    fontSize: '0.9rem',
+                    background: 'rgba(0, 242, 96, 0.2)',
+                    color: '#00f260',
+                    border: '1px solid #00f260',
+                    borderRadius: '5px',
+                    backdropFilter: 'blur(5px)',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px'
+                }}
+            >
+                Enter AR
             </button>
             <Canvas style={{ background: '#111' }}>
                 <XR store={store}>
                     <ambientLight intensity={1.5} />
                     <pointLight position={[10, 10, 10]} intensity={1} />
+
+                    <SpaceBackground />
 
                     <React.Suspense fallback={null}>
                         <ARHUD />
