@@ -1,9 +1,11 @@
 import { XR, createXRStore, useXR } from '@react-three/xr'
 import { Canvas } from '@react-three/fiber'
 import React, { useEffect } from 'react'
+import * as THREE from 'three'
 import { useGameStore } from '../store/gameStore'
 import { Alien } from './Alien'
 import { ARHUD } from './ARHUD'
+import { soundManager } from '../utils/SoundManager'
 import { ExplosionSystem } from './ExplosionSystem'
 import { PowerupItem } from './PowerupItem'
 import { GlobalInputHandler } from './GlobalInputHandler'
@@ -26,7 +28,29 @@ function HUDLayer() {
 }
 
 export function ARScene() {
-    const { spawnAlien, isPlaying, updateTime, aliens, powerups, level } = useGameStore()
+    const { spawnAlien, isPlaying, updateTime, aliens, powerups, level, lastDamageTime } = useGameStore()
+    const shakeRef = React.useRef(0)
+    const lastDamageRef = React.useRef(0)
+    const sceneGroupRef = React.useRef<THREE.Group>(null)
+
+    // Handle BGM
+    useEffect(() => {
+        if (isPlaying) {
+            soundManager.startBGM()
+        } else {
+            soundManager.stopBGM()
+        }
+        return () => soundManager.stopBGM()
+    }, [isPlaying])
+
+    // Handle Screen Shake
+    useEffect(() => {
+        if (lastDamageTime > lastDamageRef.current) {
+            lastDamageRef.current = lastDamageTime
+            shakeRef.current = 0.1 // 10cm shake intensity
+            setTimeout(() => { shakeRef.current = 0 }, 200) // Snap back
+        }
+    }, [lastDamageTime])
 
     useEffect(() => {
         console.log("ARScene: Component mounted");
@@ -99,22 +123,37 @@ export function ARScene() {
                     <ambientLight intensity={1.5} />
                     <pointLight position={[10, 10, 10]} intensity={1} />
 
-                    <React.Suspense fallback={null}>
-                        <HUDLayer />
-                        <ExplosionSystem />
-                        <GlobalInputHandler />
+                    <group
+                        ref={sceneGroupRef}
+                        onUpdate={(self) => {
+                            if (shakeRef.current > 0) {
+                                self.position.set(
+                                    (Math.random() - 0.5) * shakeRef.current,
+                                    (Math.random() - 0.5) * shakeRef.current,
+                                    (Math.random() - 0.5) * shakeRef.current
+                                )
+                            } else {
+                                self.position.set(0, 0, 0)
+                            }
+                        }}
+                    >
+                        <React.Suspense fallback={null}>
+                            <HUDLayer />
+                            <ExplosionSystem />
+                            <GlobalInputHandler />
 
-                        {powerups.map((powerup) => (
-                            <PowerupItem key={powerup.id} data={powerup} />
-                        ))}
+                            {powerups.map((powerup) => (
+                                <PowerupItem key={powerup.id} data={powerup} />
+                            ))}
 
-                    </React.Suspense>
+                        </React.Suspense>
 
-                    <React.Suspense fallback={null}>
-                        {aliens.map((alien) => (
-                            <Alien key={alien.id} data={alien} />
-                        ))}
-                    </React.Suspense>
+                        <React.Suspense fallback={null}>
+                            {aliens.map((alien) => (
+                                <Alien key={alien.id} data={alien} />
+                            ))}
+                        </React.Suspense>
+                    </group>
                 </XR>
             </Canvas>
         </>

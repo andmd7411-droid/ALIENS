@@ -61,10 +61,12 @@ export function ARHUD() {
     const [resumeHovered, setResumeHovered] = useState(false)
     const [resetHovered, setResetHovered] = useState(false)
     const [retryHovered, setRetryHovered] = useState(false)
+    const [damageFlash, setDamageFlash] = useState(0) // 0 to 1 opacity
+    const lastDamageTimeRef = useRef(0)
 
     const hudDist = 0.8
 
-    useFrame((state) => {
+    useFrame((state, delta) => {
         if (!groupRef.current) return
 
         // Lock HUD container to camera
@@ -88,6 +90,17 @@ export function ARHUD() {
             const marginY = 0.1
             const y = v.height / 2 - marginY
             pauseBtnRef.current.position.set(0, y, -hudDist)
+        }
+
+        // Damage Flash Logic
+        const stateStore = useGameStore.getState();
+        if (stateStore.lastDamageTime > lastDamageTimeRef.current) {
+            lastDamageTimeRef.current = stateStore.lastDamageTime;
+            setDamageFlash(0.6); // Start flash
+        }
+
+        if (damageFlash > 0) {
+            setDamageFlash(prev => Math.max(0, prev - delta * 2)); // Fade out
         }
     })
 
@@ -234,6 +247,14 @@ CAPTURED: ${capturedCount}`}
 
             {/* Level Complete UI */}
             <LevelCompleteUI />
+
+            {/* Global Damage Flash */}
+            {damageFlash > 0 && (
+                <mesh position={[0, 0, -0.5]}>
+                    <planeGeometry args={[2, 2]} />
+                    <meshBasicMaterial color="#ff0000" transparent opacity={damageFlash} />
+                </mesh>
+            )}
         </group>
     )
 }

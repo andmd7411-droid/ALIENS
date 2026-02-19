@@ -1,9 +1,10 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber'
-import { Billboard } from '@react-three/drei'
+import { Billboard, Line } from '@react-three/drei'
 import { TextureLoader, Group, DoubleSide } from 'three'
 import * as THREE from 'three'
 import { type Alien as AlienType, useGameStore } from '../store/gameStore'
+import { soundManager } from '../utils/SoundManager'
 
 interface AlienProps {
     data: AlienType;
@@ -19,12 +20,29 @@ export function Alien({ data }: AlienProps) {
     const timeAlive = useRef(0)
     const hasExpired = useRef(false)
 
-    // Cleanup interval on unmount
+    const [showLaser, setShowLaser] = useState(false)
+    const audioRef = useRef<{ oscillator: OscillatorNode, gain: GainNode, panner: PannerNode } | null>(null)
+
+    // Cleanup interval and audio on unmount
     useEffect(() => {
+        // Initialize spatial sound
+        const sound = soundManager.createSpatialSource(data.position)
+        if (sound) {
+            audioRef.current = sound
+            sound.oscillator.type = 'sawtooth'
+            sound.oscillator.frequency.setValueAtTime(50 + Math.random() * 50, soundManager.ctx!.currentTime)
+            sound.gain.gain.setValueAtTime(0.01, soundManager.ctx!.currentTime)
+            sound.oscillator.start()
+        }
+
         return () => {
             if (fireInterval.current) clearInterval(fireInterval.current)
+            if (audioRef.current) {
+                audioRef.current.oscillator.stop()
+                audioRef.current.oscillator.disconnect()
+            }
         }
-    }, [])
+    }, [data.id, data.position])
 
     useFrame((state, delta) => {
         if (meshRef.current) {
@@ -42,6 +60,13 @@ export function Alien({ data }: AlienProps) {
             const targetPos = state.camera.position
             const direction = new THREE.Vector3().subVectors(targetPos, worldPos).normalize()
 
+            // Update Spatial Sound Position
+            if (audioRef.current) {
+                audioRef.current.panner.positionX.setValueAtTime(worldPos.x, state.clock.elapsedTime)
+                audioRef.current.panner.positionY.setValueAtTime(worldPos.y, state.clock.elapsedTime)
+                audioRef.current.panner.positionZ.setValueAtTime(worldPos.z, state.clock.elapsedTime)
+            }
+
             // Move along direction
             const speed = data.speed * 0.5 // Adjust speed for chase
             meshRef.current.position.add(direction.multiplyScalar(speed * delta))
@@ -56,7 +81,12 @@ export function Alien({ data }: AlienProps) {
             meshRef.current.rotation.z -= delta * 2.0
             meshRef.current.rotation.z += Math.sin(time * 5) * 0.1
 
-            // Penalty Logic: Time To Live (TTL)
+            // Update Spatial Sound Position
+            if (audioRef.current && worldPos) {
+                audioRef.current.panner.positionX.setValueAtTime(worldPos.x, state.clock.elapsedTime)
+                audioRef.current.panner.positionY.setValueAtTime(worldPos.y, state.clock.elapsedTime)
+                audioRef.current.panner.positionZ.setValueAtTime(worldPos.z, state.clock.elapsedTime)
+            }
             // Increased to 12 seconds to give user time to find them (360 search takes time)
             if (timeAlive.current > 12 && !hasExpired.current) {
                 hasExpired.current = true
@@ -72,17 +102,6 @@ export function Alien({ data }: AlienProps) {
             }
         }
     })
-
-    const handlePointerDown = () => {
-        captureAlien(data.id)
-
-        if (activePowerup === 'rapid-fire') {
-            if (fireInterval.current) clearInterval(fireInterval.current)
-            fireInterval.current = setInterval(() => {
-                captureAlien(data.id)
-            }, 100) as unknown as number
-        }
-    }
 
     const handlePointerUp = () => {
         if (fireInterval.current) {
@@ -105,7 +124,22 @@ export function Alien({ data }: AlienProps) {
                 lockZ={false}
             >
                 <mesh
-                    onPointerDown={handlePointerDown}
+                    onPointerDown={() => {
+                        captureAlien(data.id)
+                        soundManager.playShoot(activePowerup === 'rapid-fire')
+                        setShowLaser(true)
+                        setTimeout(() => setShowLaser(false), 50)
+
+                        if (activePowerup === 'rapid-fire') {
+                            if (fireInterval.current) clearInterval(fireInterval.current)
+                            fireInterval.current = setInterval(() => {
+                                captureAlien(data.id)
+                                soundManager.playShoot(true)
+                                setShowLaser(true)
+                                setTimeout(() => setShowLaser(false), 30)
+                            }, 100) as unknown as number
+                        }
+                    }}
                     onPointerUp={handlePointerUp}
                     onPointerLeave={handlePointerUp}
                     onPointerOver={() => document.body.style.cursor = 'crosshair'}
@@ -154,6 +188,17 @@ export function Alien({ data }: AlienProps) {
                     />
                 </mesh>
             </Billboard>
+
+            {/* Laser Visual Effect */}
+            {showLaser && (
+                <Line
+                    points={[[0, 0, 0], data.position]} // Simple line from center to alien
+                    color={activePowerup === 'rapid-fire' ? "#00ffff" : "#ffff00"}
+                    lineWidth={2}
+                    transparent
+                    opacity={0.8}
+                />
+            )}
         </group>
     )
 }
